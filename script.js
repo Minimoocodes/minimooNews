@@ -32,7 +32,7 @@ const getNews = async () => {
       throw new Error(data.message);
     }
   } catch (error) {
-    errorRender(error.message);
+    errorRender(error);
   }
 };
 
@@ -51,14 +51,60 @@ async function getLatestNews() {
   getNews();
 }
 
+/**
+ * convert the `newsList` array into an HTML Element versioned article array
+ *
+ * REF: Element https://developer.mozilla.org/en-US/docs/Web/API/Element
+ * @param {Array} newsList the news list fetched from the API
+ * @returns {Array<Element>} array of HTML Element
+ */
+const convertNewsListToArticlesEl = (newsList) => {
+  // `articles` contains the HTML version of news
+  let articles = [];
+  for (let news of newsList) {
+    // news image part in HTML
+    let imageEl = document.createElement("img");
+    imageEl.classList.add("news_img");
+    // check on this urlToImage may be `null`
+    // adopt a default image if the urlToImage is `null`
+    imageEl.src = news.urlToImage;
+    let colLg4El = document.createElement("div");
+    colLg4El.classList.add("col-lg-4");
+    colLg4El.append(imageEl);
+
+    // news text part in HTML
+    let titleEl = document.createElement("h2");
+    titleEl.textContent = news.title;
+    let summaryEl = document.createElement("p");
+    summaryEl.textContent = news.description;
+    let sourceEl = document.createElement("div");
+    sourceEl.textContent = `${news.source.name.toLowerCase()} ${moment(
+      news.publishedAt
+    ).fromNow()}`;
+    let colLg8El = document.createElement("div");
+    colLg8El.classList.add("col-lg-8");
+    colLg8El.append(titleEl, summaryEl, sourceEl);
+
+    // the whole article in HTML
+    let articleEl = document.createElement("div");
+    articleEl.classList.add("row", "article");
+    articleEl.append(colLg4El, colLg8El);
+
+    // push to the articles array
+    articles.push(articleEl);
+  }
+
+  return articles;
+};
+
 const render = () => {
-  for (let i = 0; i < newsList.length; i++) {
-    (newsImgEl.src = newsList[i].urlToImage),
-      (newsTitleEl.textContent = newsList[i].title),
-      (newsSummaryEl.textContent = newsList[i].description),
-      (newsSourceEl.textContent = `${newsList[
-        i
-      ].source.name.toLowerCase()} ${moment(newsList.publishedAt).fromNow()}`);
+  let newsBoardEl = document.querySelector("#newsBoard");
+  newsBoardEl.innerHTML = ""; // clear first
+
+  let articles = convertNewsListToArticlesEl(newsList);
+  for (let article of articles) {
+    // article.outerHTML https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML
+    newsBoardEl.innerHTML += article.outerHTML;
   }
 };
 
@@ -73,7 +119,7 @@ const getNewsByCategory = async (event) => {
   getNews();
 };
 
-const errorRender = () => {
+const errorRender = (error) => {
   const errorHTML = `<div class="alert alert-danger" role="alert">
     ${error.message}</div>`;
 
