@@ -27,13 +27,12 @@ const getNews = async () => {
         throw new Error("No result for this search");
       }
       newsList = data.articles;
-      //render();
-      convertNewsListToArticlesEl();
+      console.log(newsList);
+      render();
     } else {
       throw new Error(data.message);
     }
   } catch (error) {
-    errorRender(error);
     errorRender(error);
   }
 };
@@ -69,13 +68,11 @@ const convertNewsListToArticlesEl = (newsList) => {
     imageEl.classList.add("news_img");
     // check on this urlToImage may be `null`
     // adopt a default image if the urlToImage is `null`
+    imageEl.src == null
+      ? (imageEl.src =
+          "https://icon-library.com/images/no-picture-available-icon/no-picture-available-icon-1.jpg?")
+      : (imageEl.src = news.urlToImage);
 
-    if (!news.urlToImage) {
-      imageEl.src =
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnBLJRDJjCXfWLE_yiI4_MrhuicyKYH4CstclgXq9h7w&s";
-    } else {
-      imageEl.src = news.urlToImage;
-    }
     let colLg4El = document.createElement("div");
     colLg4El.classList.add("col-lg-4");
     colLg4El.append(imageEl);
@@ -103,6 +100,17 @@ const convertNewsListToArticlesEl = (newsList) => {
   }
 
   return articles;
+};
+
+const render = () => {
+  let newsBoardEl = document.querySelector("#newsBoard");
+  newsBoardEl.innerHTML = ""; // clear first
+
+  let articles = convertNewsListToArticlesEl(newsList);
+  for (let article of articles) {
+    // article.outerHTML https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML
+    newsBoardEl.innerHTML += article.outerHTML;
+  }
 };
 
 getLatestNews();
